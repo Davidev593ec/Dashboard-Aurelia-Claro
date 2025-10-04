@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Turno {
+  id          Int      @id @default(autoincrement())
+  fecha       DateTime
+  letra       String   // V, M, RR, E, H
+  numero      Int
+  modulo      Int
+  tiempo      Int?     // Tiempo en segundos
+  observacion String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([fecha])
+  @@index([letra])
+  @@index([modulo])
+}
+
+model Encuesta {
+  id           Int      @id @default(autoincrement())
+  nps          Int      // Net Promoter Score (0-10)
+  calificacion String   // Muy mala, Mala, Regular, Buena, Excelente
+  comentario   String?  // Comentarios/sugerencias
+  rangoEdad    String?  // Rango de edad
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([nps])
+  @@index([calificacion])
+}

@@ -15,18 +15,39 @@
       </div>
 
       <nav class="sidebar-nav">
+        <NuxtLink to="/" class="nav-item" @click="closeSidebar">
+          <span class="nav-icon">
+            <img src="~/assets/icons/counter.svg" alt="Resumen" style="width: 20px; height: 20px;" />
+          </span>
+          <span class="nav-text">Resumen</span>
+        </NuxtLink>
+
         <NuxtLink to="/turnos" class="nav-item" @click="closeSidebar">
           <span class="nav-icon">
-            <img src="~/assets/icons/ticket.png" alt="Turnos" style="width: 20px; height: 20px;" />
+            <img src="~/assets/icons/ticket.svg" alt="Turnos" style="width: 20px; height: 20px;" />
           </span>
           <span class="nav-text">Turnos</span>
         </NuxtLink>
 
         <NuxtLink to="/encuestas" class="nav-item" @click="closeSidebar">
           <span class="nav-icon">
-            <img src="~/assets/icons/survey.png" alt="Encuestas" style="width: 20px; height: 20px;" />
+            <img src="~/assets/icons/survey.svg" alt="Encuestas" style="width: 20px; height: 20px;" />
           </span>
           <span class="nav-text">Encuestas</span>
+        </NuxtLink>
+
+        <NuxtLink to="/monitoreo" class="nav-item" @click="closeSidebar">
+          <span class="nav-icon">
+            <img src="~/assets/icons/monitor.svg" alt="Monitoreo" style="width: 20px; height: 20px;" />
+          </span>
+          <span class="nav-text">Monitoreo</span>
+        </NuxtLink>
+
+        <NuxtLink to="/analytics" class="nav-item" @click="closeSidebar">
+          <span class="nav-icon">
+            <img src="~/assets/icons/statics.svg" alt="Analytics" style="width: 20px; height: 20px;" />
+          </span>
+          <span class="nav-text">Analytics</span>
         </NuxtLink>
       </nav>
     </aside>

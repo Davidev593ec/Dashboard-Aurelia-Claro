@@ -5,14 +5,6 @@
       <div class="header-content">
         <h1>Dashboard Aurelia - Turnos</h1>
         <div class="header-actions">
-          <select v-model="selectedFilter" @change="fetchData" class="filter-select">
-            <option value="">Todas las categorías</option>
-            <option value="M">Móvil</option>
-            <option value="E">Equipos</option>
-            <option value="RR">Retención</option>
-            <option value="V">Ventas</option>
-            <option value="H">Hogar</option>
-          </select>
           <span class="user-info">{{ user?.name || user?.email }}</span>
           <button @click="downloadExcel" class="btn-download">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;">
@@ -28,13 +20,45 @@
     </header>
 
     <div class="dashboard-content">
+      <div class="filter-container">
+        <div class="date-filters">
+          <div class="date-input-group">
+            <label for="fecha-desde">Desde:</label>
+            <input
+              id="fecha-desde"
+              type="date"
+              v-model="fechaDesde"
+              @change="fetchData"
+              class="date-input"
+            />
+          </div>
+          <div class="date-input-group">
+            <label for="fecha-hasta">Hasta:</label>
+            <input
+              id="fecha-hasta"
+              type="date"
+              v-model="fechaHasta"
+              @change="fetchData"
+              class="date-input"
+            />
+          </div>
+        </div>
+        <select v-model="selectedFilter" @change="fetchData" class="filter-select">
+          <option value="">Todas las categorías</option>
+          <option value="M">Móvil</option>
+          <option value="E">Equipos</option>
+          <option value="RR">Retención</option>
+          <option value="V">Ventas</option>
+          <option value="H">Hogar</option>
+        </select>
+      </div>
       <div v-if="loading" class="loading">
         <div class="spinner"></div>
         <p>Cargando datos...</p>
       </div>
 
       <template v-else>
-        <!-- KPIs -->
+        <!-- KPIs - Fila 1 -->
         <section class="stats-grid">
           <StatCard
             :value="stats.totalTurnos"
@@ -42,19 +66,98 @@
             color="#e30613"
           >
             <template #icon>
-              <img src="~/assets/icons/ticket.png" alt="Ticket" style="width: 28px; height: 28px;" />
+              <img src="~/assets/icons/ticket.svg" alt="Ticket" style="width: 28px; height: 28px;" />
             </template>
           </StatCard>
 
           <StatCard
-            :value="`${stats.promedioTiempo.toFixed(0)} seg`"
-            label="Tiempo Promedio"
-            color="#c50510"
+            :value="`${stats.tasaAtencion.toFixed(2)}%`"
+            label="Tasa de Atención"
+            color="#2ecc71"
           >
             <template #icon>
-              <img src="~/assets/icons/clock.png" alt="Clock" style="width: 28px; height: 28px;" />
+              <img src="~/assets/icons/thum.svg" alt="Aprobado" style="width: 28px; height: 28px;" />
             </template>
           </StatCard>
+
+          <StatCard
+            :value="`${stats.tasaAbandono.toFixed(2)}%`"
+            label="Tasa de Abandono"
+            :color="stats.tasaAbandono > 10 ? '#e74c3c' : '#f39c12'"
+          >
+            <template #icon>
+              <img src="~/assets/icons/cancel.svg" alt="Abandono" style="width: 28px; height: 28px;" />
+            </template>
+          </StatCard>
+
+          <StatCard
+            :value="`${stats.promedioPorDia}`"
+            label="Turnos por Día (Promedio)"
+            color="#666666"
+          >
+            <template #icon>
+              <img src="~/assets/icons/statics.svg" alt="Statistics" style="width: 28px; height: 28px;" />
+            </template>
+          </StatCard>
+        </section>
+
+        <!-- Ciclo de Atención - Tiempos -->
+        <section class="time-cycle-section">
+          <div class="time-cycle-card">
+            <div class="cycle-header">
+              <div class="cycle-title">
+                <img src="~/assets/icons/clock.svg" alt="Tiempos" style="width: 32px; height: 32px;" />
+                <h3>Ciclo de Atención - Tiempos Promedio</h3>
+              </div>
+            </div>
+            <div class="cycle-body">
+              <div class="time-item">
+                <div class="time-icon">
+                  <img src="~/assets/icons/totem.svg" alt="Totem" style="width: 24px; height: 24px;" />
+                </div>
+                <div class="time-info">
+                  <span class="time-label">Tiempo Uso Tótem</span>
+                  <span class="time-value">{{ (stats.tiempoUsoTotem || 0).toFixed(2) }} seg</span>
+                </div>
+              </div>
+
+              <div class="time-divider">→</div>
+
+              <div class="time-item">
+                <div class="time-icon">
+                  <img src="~/assets/icons/user.svg" alt="Espera" style="width: 24px; height: 24px;" />
+                </div>
+                <div class="time-info">
+                  <span class="time-label">Tiempo Espera</span>
+                  <span class="time-value">{{ (stats.tiempoEsperaPromedio / 60).toFixed(2) }} min</span>
+                </div>
+              </div>
+
+              <div class="time-divider">→</div>
+
+              <div class="time-item">
+                <div class="time-icon">
+                  <img src="~/assets/icons/counter.svg" alt="Atención" style="width: 24px; height: 24px;" />
+                </div>
+                <div class="time-info">
+                  <span class="time-label">Tiempo Atención</span>
+                  <span class="time-value">{{ (stats.tiempoAtencionPromedio / 60).toFixed(2) }} min</span>
+                </div>
+              </div>
+
+              <div class="time-divider">=</div>
+
+              <div class="time-item time-total">
+                <div class="time-icon">
+                  <img src="~/assets/icons/clock.svg" alt="Total" style="width: 24px; height: 24px;" />
+                </div>
+                <div class="time-info">
+                  <span class="time-label">Tiempo Total</span>
+                  <span class="time-value total">{{ Math.round(stats.promedioTiempo / 60) }} min</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <StatCard
             :value="stats.moduloMasOcupado?.modulo || '-'"
@@ -62,17 +165,7 @@
             color="#333333"
           >
             <template #icon>
-              <img src="~/assets/icons/counter.png" alt="Counter" style="width: 28px; height: 28px;" />
-            </template>
-          </StatCard>
-
-          <StatCard
-            :value="`${stats.turnosPorDia.toFixed(0)}`"
-            label="Turnos por Día (Promedio)"
-            color="#666666"
-          >
-            <template #icon>
-              <img src="~/assets/icons/statics.png" alt="Statistics" style="width: 28px; height: 28px;" />
+              <img src="~/assets/icons/counter.svg" alt="Counter" style="width: 28px; height: 28px;" />
             </template>
           </StatCard>
         </section>
@@ -87,6 +180,7 @@
                 values: pieChartData.values,
                 colors: pieChartData.colors
               }"
+              unit="turnos"
             />
           </div>
 
@@ -99,6 +193,17 @@
               }"
             />
           </div>
+
+          <div class="chart-card">
+            <h3>Estado de Turnos</h3>
+            <DonutChart
+              :data="{
+                labels: donutChartData.labels,
+                values: donutChartData.values,
+                colors: donutChartData.colors
+              }"
+            />
+          </div>
         </section>
 
         <section class="charts-grid-bottom">
@@ -108,6 +213,16 @@
               :data="{
                 labels: lineChartData.labels,
                 values: lineChartData.values
+              }"
+            />
+          </div>
+
+          <div class="chart-card full-width">
+            <h3>Evolución de Atendidos vs Abandonados</h3>
+            <MultiLineChart
+              :data="{
+                labels: multiLineChartData.labels,
+                datasets: multiLineChartData.datasets
               }"
             />
           </div>
@@ -157,15 +272,28 @@ const { user, logout, isAuthenticated, token } = useAuth()
 
 const loading = ref(true)
 const selectedFilter = ref('')
+const fechaDesde = ref('')
+const fechaHasta = ref('')
+
 const stats = ref<any>({
   totalTurnos: 0,
   promedioTiempo: 0,
   moduloMasOcupado: null,
-  turnosPorDia: 0
+  turnosPorDia: 0,
+  // Nuevas métricas
+  tasaAtencion: 0,
+  tasaAbandono: 0,
+  tiempoEsperaPromedio: 0,
+  tiempoAtencionPromedio: 0,
+  tiempoUsoTotem: 0,
+  promedioPorDia: 0
 })
+
 const pieChartData = ref({ labels: [], values: [], colors: [] })
 const barChartData = ref({ labels: [], values: [] })
 const lineChartData = ref({ labels: [], values: [] })
+const donutChartData = ref({ labels: [], values: [], colors: [] })
+const multiLineChartData = ref({ labels: [], datasets: [] })
 const lastTurnos = ref<any[]>([])
 
 onMounted(async () => {
@@ -183,18 +311,60 @@ onMounted(async () => {
 const fetchData = async () => {
   try {
     loading.value = true
+
+    // Construir parámetros de filtro
+    const params: any = {}
+    if (selectedFilter.value) params.letra = selectedFilter.value
+    if (fechaDesde.value) params.fechaInicio = fechaDesde.value
+    if (fechaHasta.value) params.fechaFin = fechaHasta.value
+
     // Obtener estadísticas
     const statsData = await $fetch('/api/turnos/stats', {
       headers: {
         authorization: `Bearer ${token.value}`
       },
-      params: selectedFilter.value ? { letra: selectedFilter.value } : {}
+      params
     })
 
     stats.value.totalTurnos = statsData.totalTurnos
     stats.value.promedioTiempo = statsData.promedioTiempo || 0
 
+    // Asignar nuevas métricas de la API
+    stats.value.tasaAtencion = statsData.tasaAtencion || 0
+    stats.value.tasaAbandono = statsData.tasaAbandono || 0
+    stats.value.tiempoEsperaPromedio = statsData.promedioTiempoEspera || 0
+    stats.value.tiempoAtencionPromedio = statsData.promedioTiempoAtencion || 0
+    stats.value.tiempoUsoTotem = statsData.promedioTiempoUsoTotem || 0
+    stats.value.promedioPorDia = statsData.promedioPorDia || 0
+
     console.log('📊 Stats recibidos:', statsData)
+
+    // Procesar datos para gráfica de dona (Atendidos vs Abandonados)
+    donutChartData.value = {
+      labels: ['Atendidos', 'Abandonados'],
+      values: [statsData.turnosAtendidos || 0, statsData.turnosAbandonados || 0],
+      colors: ['#2ecc71', '#e74c3c']
+    }
+
+    // Procesar datos para gráfica de líneas múltiples (Evolución de atendidos y abandonados)
+    if (statsData.estadoPorDia && statsData.estadoPorDia.length > 0) {
+      multiLineChartData.value = {
+        labels: statsData.estadoPorDia.map((item: any) => formatDate(item.fecha)),
+        datasets: [
+          {
+            label: 'Atendidos',
+            data: statsData.estadoPorDia.map((item: any) => item.atendidos),
+            color: '#2ecc71'
+          },
+          {
+            label: 'Abandonados',
+            data: statsData.estadoPorDia.map((item: any) => item.abandonados),
+            color: '#e74c3c'
+          }
+        ]
+      }
+      console.log('📈 Multi Line Chart Data:', multiLineChartData.value)
+    }
 
     // Procesar distribución por letra (Pie Chart)
     if (statsData.distribuccionLetra && statsData.distribuccionLetra.length > 0) {
@@ -259,7 +429,7 @@ const fetchData = async () => {
       headers: {
         authorization: `Bearer ${token.value}`
       },
-      params: selectedFilter.value ? { letra: selectedFilter.value } : {}
+      params
     })
 
     lastTurnos.value = turnosData.data
@@ -383,33 +553,6 @@ const downloadExcel = async () => {
         gap 12px
         width 100%
 
-      .filter-select
-        padding 10px 40px 10px 20px
-        background white
-        color #333
-        border none
-        border-radius 50px
-        cursor pointer
-        font-size 14px
-        font-weight 600
-        transition all 0.3s ease
-        outline none
-        appearance none
-        background-image url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")
-        background-repeat no-repeat
-        background-position right 15px center
-
-        @media (max-width: 768px)
-          font-size 12px
-          padding 8px 32px 8px 16px
-          background-position right 12px center
-
-        &:hover
-          background-color #f5f5f5
-          background-image url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")
-          background-repeat no-repeat
-          background-position right 15px center
-
       .user-info
         color white
         font-size 14px
@@ -468,6 +611,98 @@ const downloadExcel = async () => {
   @media (max-width: 768px)
     padding 20px
 
+.filter-container
+  display flex
+  justify-content flex-end
+  align-items center
+  gap 16px
+  margin-bottom 24px
+
+  @media (max-width: 768px)
+    margin-bottom 20px
+    flex-direction column
+    align-items stretch
+
+  .date-filters
+    display flex
+    gap 12px
+    align-items center
+
+    @media (max-width: 768px)
+      flex-direction column
+      gap 8px
+
+    .date-input-group
+      display flex
+      align-items center
+      gap 8px
+
+      label
+        font-size 14px
+        font-weight 600
+        color #333
+        white-space nowrap
+
+        @media (max-width: 768px)
+          font-size 12px
+
+      .date-input
+        padding 10px 16px
+        background white
+        color #333
+        border 1px solid #e0e0e0
+        border-radius 8px
+        font-size 14px
+        font-weight 500
+        transition all 0.3s ease
+        outline none
+        box-shadow 0 2px 4px rgba(0, 0, 0, 0.08)
+        cursor pointer
+
+        @media (max-width: 768px)
+          font-size 12px
+          padding 8px 12px
+
+        &:hover
+          background-color #f8f9fa
+          border-color #e30613
+          box-shadow 0 2px 8px rgba(227, 6, 19, 0.15)
+
+        &:focus
+          border-color #e30613
+          box-shadow 0 0 0 3px rgba(227, 6, 19, 0.1)
+
+  .filter-select
+    padding 10px 40px 10px 20px
+    background white
+    color #333
+    border 1px solid #e0e0e0
+    border-radius 8px
+    cursor pointer
+    font-size 14px
+    font-weight 600
+    transition all 0.3s ease
+    outline none
+    appearance none
+    background-image url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")
+    background-repeat no-repeat
+    background-position right 15px center
+    box-shadow 0 2px 4px rgba(0, 0, 0, 0.08)
+
+    @media (max-width: 768px)
+      font-size 12px
+      padding 8px 32px 8px 16px
+      background-position right 12px center
+
+    &:hover
+      background-color #f8f9fa
+      border-color #e30613
+      box-shadow 0 2px 8px rgba(227, 6, 19, 0.15)
+
+    &:focus
+      border-color #e30613
+      box-shadow 0 0 0 3px rgba(227, 6, 19, 0.1)
+
 .loading
   text-align center
   padding 80px 20px
@@ -499,15 +734,162 @@ const downloadExcel = async () => {
     gap 16px
     margin-bottom 24px
 
+.time-cycle-section
+  display grid
+  grid-template-columns 3fr 1fr
+  gap 24px
+  margin-bottom 40px
+
+  @media (max-width: 1024px)
+    grid-template-columns 1fr
+    gap 16px
+
+  .time-cycle-card
+    background white
+    border-radius 12px
+    padding 24px
+    box-shadow 0 2px 8px rgba(0, 0, 0, 0.08)
+    border-left 4px solid #e30613
+
+    @media (max-width: 768px)
+      padding 16px
+
+    .cycle-header
+      margin-bottom 24px
+
+      @media (max-width: 768px)
+        margin-bottom 16px
+
+      .cycle-title
+        display flex
+        align-items center
+        gap 12px
+
+        h3
+          margin 0
+          font-size 18px
+          color #333
+          font-weight 600
+
+          @media (max-width: 768px)
+            font-size 16px
+
+    .cycle-body
+      display flex
+      align-items center
+      justify-content space-between
+      gap 16px
+      flex-wrap wrap
+
+      @media (max-width: 768px)
+        flex-direction column
+        gap 12px
+
+      .time-item
+        flex 1
+        display flex
+        align-items center
+        gap 12px
+        background #f8f9fa
+        padding 16px
+        border-radius 10px
+        min-width 140px
+        transition all 0.3s ease
+
+        @media (max-width: 768px)
+          width 100%
+          padding 12px
+
+        &:hover
+          transform translateY(-2px)
+          box-shadow 0 4px 12px rgba(0, 0, 0, 0.1)
+
+        &.time-total
+          background linear-gradient(135deg, #e30613, #c50510)
+          border 2px solid #e30613
+
+          .time-info
+            .time-label
+              color white
+
+            .time-value
+              color white
+              font-weight 700
+
+        .time-icon
+          display flex
+          align-items center
+          justify-content center
+          width 40px
+          height 40px
+          background white
+          border-radius 50%
+          flex-shrink 0
+
+          @media (max-width: 768px)
+            width 32px
+            height 32px
+
+          img
+            width 24px
+            height 24px
+
+            @media (max-width: 768px)
+              width 20px
+              height 20px
+
+        .time-info
+          display flex
+          flex-direction column
+          gap 4px
+          flex 1
+
+          .time-label
+            font-size 12px
+            color #666
+            font-weight 500
+            text-transform uppercase
+            letter-spacing 0.5px
+
+            @media (max-width: 768px)
+              font-size 11px
+
+          .time-value
+            font-size 20px
+            color #333
+            font-weight 700
+
+            @media (max-width: 768px)
+              font-size 18px
+
+            &.total
+              font-size 24px
+
+              @media (max-width: 768px)
+                font-size 20px
+
+      .time-divider
+        font-size 24px
+        color #e30613
+        font-weight 700
+        flex-shrink 0
+
+        @media (max-width: 768px)
+          transform rotate(90deg)
+          font-size 20px
+
 .charts-grid-top
   display grid
-  grid-template-columns 1fr 1fr
+  grid-template-columns repeat(3, 1fr)
   gap 24px
   margin-bottom 24px
   width 100%
   max-width 100%
 
-  @media (max-width: 1024px)
+  @media (max-width: 1200px)
+    grid-template-columns repeat(2, 1fr)
+
+  @media (max-width: 768px)
     grid-template-columns 1fr
     gap 16px
 

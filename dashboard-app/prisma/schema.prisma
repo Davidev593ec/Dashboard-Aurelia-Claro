@@ -20,19 +20,38 @@ model User {
 }
 
 model Turno {
-  id          Int      @id @default(autoincrement())
-  fecha       DateTime
-  letra       String   // V, M, RR, E, H
-  numero      Int
-  modulo      Int
-  tiempo      Int?     // Tiempo en segundos
-  observacion String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  fecha           DateTime
+  letra           String   // V, M, RR, E, H
+  numero          Int
+  modulo          Int
+
+  // Métricas operacionales
+  estado          String   @default("atendido") // "atendido" | "abandonado"
+  tiempoUsoTotem  Int?     // Tiempo de uso del tótem en segundos (nueva columna)
+  tiempoEspera    Int?     // Tiempo de espera en segundos
+  tiempoAtencion  Int?     // Tiempo de atención en segundos
+  tiempo          Int?     // Tiempo total (mantener por compatibilidad)
+  horaEmision     DateTime @default(now())
+  horaAtencion    DateTime?
+  ticketCompleto  String?  // Ej: "M1-001"
+
+  // Relaciones
+  cacId           Int?
+  cac             CAC?     @relation(fields: [cacId], references: [id])
+  totemId         Int?
+  totem           Totem?   @relation(fields: [totemId], references: [id])
+
+  observacion     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([fecha])
   @@index([letra])
   @@index([modulo])
+  @@index([estado])
+  @@index([cacId])
+  @@index([totemId])
 }
 
 model Encuesta {
@@ -46,4 +65,64 @@ model Encuesta {
 
   @@index([nps])
   @@index([calificacion])
+}
+
+model CAC {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @unique // "San Marino"
+  ciudad    String   // "Guayaquil"
+  direccion String?
+  activo    Boolean  @default(true)
+  turnos    Turno[]
+  totems    Totem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ciudad])
+}
+
+model Totem {
+  id              Int            @id @default(autoincrement())
+  codigo          String         @unique // "TOTEM-SM-01"
+  cacId           Int
+  cac             CAC            @relation(fields: [cacId], references: [id])
+  estado          String         @default("activo") // "activo" | "inactivo" | "mantenimiento"
+  ultimaActividad DateTime       @default(now())
+  turnos          Turno[]
+  metricas        MetricaTotem[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([cacId])
+  @@index([estado])
+}
+
+model MetricaTotem {
+  id                      Int      @id @default(autoincrement())
+  totemId                 Int
+  totem                   Totem    @relation(fields: [totemId], references: [id])
+  fecha                   DateTime
+  uptime                  Float    @default(100.0) // Porcentaje 0-100
+  totalTransacciones      Int      @default(0)
+  totalErrores            Int      @default(0)
+  tiempoPromedioRespuesta Float?   // En milisegundos
+  createdAt               DateTime @default(now())
+
+  @@unique([totemId, fecha])
+  @@index([totemId, fecha])
+}
+
+model HorarioPico {
+  id                   Int      @id @default(autoincrement())
+  fecha                DateTime
+  hora                 Int      // 0-23
+  totalTurnos          Int      @default(0)
+  turnosAtendidos      Int      @default(0)
+  turnosAbandonados    Int      @default(0)
+  tasaAbandono         Float?   // Porcentaje 0-100
+  tiempoEsperaPromedio Int?     // Segundos
+  createdAt            DateTime @default(now())
+
+  @@unique([fecha, hora])
+  @@index([fecha, hora])
 }

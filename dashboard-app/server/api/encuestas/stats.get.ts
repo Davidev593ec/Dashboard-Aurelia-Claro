@@ -52,6 +52,103 @@ export default defineEventHandler(async () => {
   ).map(([nps, count]) => ({ nps: Number(nps), count }))
     .sort((a: any, b: any) => a.nps - b.nps)
 
+  // NUEVA FUNCIONALIDAD: Categorización de mejoras sugeridas
+  const categorizarMejora = (comentario: string): string => {
+    const texto = comentario.toLowerCase()
+
+    // Categoría: Sistema
+    if (
+      texto.includes('lenta') ||
+      texto.includes('lento') ||
+      texto.includes('volumen') ||
+      texto.includes('audio') ||
+      texto.includes('totem') ||
+      texto.includes('tótem') ||
+      texto.includes('pantalla') ||
+      texto.includes('sistema') ||
+      texto.includes('velocidad') ||
+      texto.includes('idioma')
+    ) {
+      return 'sistema'
+    }
+
+    // Categoría: Infraestructura
+    if (
+      texto.includes('silla') ||
+      texto.includes('asiento') ||
+      texto.includes('ventilación') ||
+      texto.includes('ventilacion') ||
+      texto.includes('aire') ||
+      texto.includes('televisor') ||
+      texto.includes('tv') ||
+      texto.includes('pantalla') ||
+      texto.includes('agua') ||
+      texto.includes('baño')
+    ) {
+      return 'infraestructura'
+    }
+
+    // Categoría: Accesibilidad
+    if (
+      texto.includes('mayor') ||
+      texto.includes('adulto') ||
+      texto.includes('entiendo') ||
+      texto.includes('entiende') ||
+      texto.includes('dificil') ||
+      texto.includes('difícil') ||
+      texto.includes('complejo') ||
+      texto.includes('ayuda')
+    ) {
+      return 'accesibilidad'
+    }
+
+    // Categoría: Expansión
+    if (
+      texto.includes('más') ||
+      texto.includes('mas máquinas') ||
+      texto.includes('mas maquinas') ||
+      texto.includes('otro') ||
+      texto.includes('punto')
+    ) {
+      return 'expansion'
+    }
+
+    return 'otros'
+  }
+
+  // Procesar mejoras por categoría
+  const mejorasPorCategoria: Record<string, Array<{ texto: string; count: number }>> = {
+    sistema: [],
+    infraestructura: [],
+    accesibilidad: [],
+    expansion: [],
+    otros: []
+  }
+
+  const mejorasMap: Record<string, { count: number; categoria: string }> = {}
+
+  encuestas.forEach((encuesta: any) => {
+    if (encuesta.comentario && encuesta.comentario.trim() && encuesta.comentario !== '-') {
+      const comentario = encuesta.comentario.trim()
+      const categoria = categorizarMejora(comentario)
+
+      if (!mejorasMap[comentario]) {
+        mejorasMap[comentario] = { count: 0, categoria }
+      }
+      mejorasMap[comentario].count++
+    }
+  })
+
+  // Organizar mejoras por categoría
+  Object.entries(mejorasMap).forEach(([texto, { count, categoria }]) => {
+    mejorasPorCategoria[categoria].push({ texto, count })
+  })
+
+  // Ordenar cada categoría por count descendente
+  Object.keys(mejorasPorCategoria).forEach(categoria => {
+    mejorasPorCategoria[categoria].sort((a, b) => b.count - a.count)
+  })
+
   return {
     totalEncuestas,
     promedioNPS: avgNPS._avg.nps || 0,
@@ -61,6 +158,9 @@ export default defineEventHandler(async () => {
     promotores,
     distribuccionCalificacion,
     distribuccionEdad,
-    distribuccionNPS
+    distribuccionNPS,
+
+    // NUEVA MÉTRICA: Mejoras categorizadas
+    mejorasPorCategoria
   }
 })

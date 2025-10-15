@@ -16,6 +16,7 @@
     "chartjs-plugin-datalabels": "^2.2.0",
     "jsonwebtoken": "^9.0.2",
     "nuxt": "^4.1.2",
+    "potrace": "^2.1.8",
     "stylus": "^0.64.0",
     "vue": "^3.5.22",
     "vue-chartjs": "^5.3.2",

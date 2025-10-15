@@ -20,6 +20,31 @@
     </header>
 
     <div class="dashboard-content">
+      <div class="filter-container">
+        <div class="date-filters">
+          <div class="date-input-group">
+            <label for="fecha-desde">Desde:</label>
+            <input
+              id="fecha-desde"
+              type="date"
+              v-model="fechaDesde"
+              @change="fetchData"
+              class="date-input"
+            />
+          </div>
+          <div class="date-input-group">
+            <label for="fecha-hasta">Hasta:</label>
+            <input
+              id="fecha-hasta"
+              type="date"
+              v-model="fechaHasta"
+              @change="fetchData"
+              class="date-input"
+            />
+          </div>
+        </div>
+      </div>
+
       <div v-if="loading" class="loading">
         <div class="spinner"></div>
         <p>Cargando datos...</p>
@@ -34,7 +59,7 @@
             color="#e30613"
           >
             <template #icon>
-              <img src="~/assets/icons/survey.png" alt="Survey" style="width: 28px; height: 28px;" />
+              <img src="~/assets/icons/survey.svg" alt="Survey" style="width: 28px; height: 28px;" />
             </template>
           </StatCard>
 
@@ -44,7 +69,7 @@
             color="#c50510"
           >
             <template #icon>
-              <img src="~/assets/icons/star.png" alt="Star" style="width: 28px; height: 28px;" />
+              <img src="~/assets/icons/star.svg" alt="Star" style="width: 28px; height: 28px;" />
             </template>
           </StatCard>
 
@@ -54,7 +79,7 @@
             color="#333333"
           >
             <template #icon>
-              <img src="~/assets/icons/score.png" alt="Score" style="width: 28px; height: 28px;" />
+              <img src="~/assets/icons/score.svg" alt="Score" style="width: 28px; height: 28px;" />
             </template>
           </StatCard>
 
@@ -64,7 +89,7 @@
             color="#2ecc71"
           >
             <template #icon>
-              <img src="~/assets/icons/thum.png" alt="Thumb up" style="width: 28px; height: 28px;" />
+              <img src="~/assets/icons/thum.svg" alt="Thumb up" style="width: 28px; height: 28px;" />
             </template>
           </StatCard>
         </section>
@@ -79,6 +104,7 @@
                 values: calificacionChartData.values,
                 colors: calificacionChartData.colors
               }"
+              unit="encuestas"
             />
           </div>
 
@@ -95,17 +121,6 @@
 
         <section class="charts-grid-top">
           <div class="chart-card">
-            <h3>Mejoras Sugeridas</h3>
-            <div class="mejoras-container">
-              <div v-for="(mejora, index) in topMejoras" :key="index" class="mejora-item">
-                <span class="mejora-rank">{{ index + 1 }}</span>
-                <span class="mejora-text">{{ mejora.texto }}</span>
-                <span class="mejora-badge">{{ mejora.count }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="chart-card">
             <h3>Rango de Edad</h3>
             <BarChart
               :data="{
@@ -113,6 +128,83 @@
                 values: edadChartData.values
               }"
             />
+          </div>
+
+          <div class="chart-card">
+            <h3>Mejoras Sugeridas (Top General)</h3>
+            <div class="mejoras-container">
+              <div v-for="(mejora, index) in topMejorasGeneral" :key="index" class="mejora-item">
+                <span class="mejora-rank">{{ index + 1 }}</span>
+                <span class="mejora-text">{{ mejora.texto }}</span>
+                <span class="mejora-badge">{{ mejora.count }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Mejoras Categorizadas -->
+        <section class="mejoras-categorizadas-section">
+          <h3>Mejoras Sugeridas por Categoría</h3>
+          <div class="categorias-grid">
+            <div class="categoria-card" v-if="mejorasPorCategoria.sistema?.length > 0">
+              <div class="categoria-header">
+                <span class="categoria-icon">
+                  <img src="~/assets/icons/computer.svg" alt="Sistema" style="width: 24px; height: 24px;" />
+                </span>
+                <h4>Sistema</h4>
+              </div>
+              <div class="mejoras-container">
+                <div v-for="(mejora, index) in mejorasPorCategoria.sistema.slice(0, 5)" :key="index" class="mejora-item-small">
+                  <span class="mejora-text">{{ mejora.texto }}</span>
+                  <span class="mejora-badge">{{ mejora.count }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="categoria-card" v-if="mejorasPorCategoria.infraestructura?.length > 0">
+              <div class="categoria-header">
+                <span class="categoria-icon">
+                  <img src="~/assets/icons/infrastructure.svg" alt="Infraestructura" style="width: 24px; height: 24px;" />
+                </span>
+                <h4>Infraestructura</h4>
+              </div>
+              <div class="mejoras-container">
+                <div v-for="(mejora, index) in mejorasPorCategoria.infraestructura.slice(0, 5)" :key="index" class="mejora-item-small">
+                  <span class="mejora-text">{{ mejora.texto }}</span>
+                  <span class="mejora-badge">{{ mejora.count }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="categoria-card" v-if="mejorasPorCategoria.accesibilidad?.length > 0">
+              <div class="categoria-header">
+                <span class="categoria-icon">
+                  <img src="~/assets/icons/accessibility.svg" alt="Accesibilidad" style="width: 24px; height: 24px;" />
+                </span>
+                <h4>Accesibilidad</h4>
+              </div>
+              <div class="mejoras-container">
+                <div v-for="(mejora, index) in mejorasPorCategoria.accesibilidad.slice(0, 5)" :key="index" class="mejora-item-small">
+                  <span class="mejora-text">{{ mejora.texto }}</span>
+                  <span class="mejora-badge">{{ mejora.count }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="categoria-card" v-if="mejorasPorCategoria.expansion?.length > 0">
+              <div class="categoria-header">
+                <span class="categoria-icon">
+                  <img src="~/assets/icons/location.svg" alt="Expansión" style="width: 24px; height: 24px;" />
+                </span>
+                <h4>Expansión</h4>
+              </div>
+              <div class="mejoras-container">
+                <div v-for="(mejora, index) in mejorasPorCategoria.expansion.slice(0, 5)" :key="index" class="mejora-item-small">
+                  <span class="mejora-text">{{ mejora.texto }}</span>
+                  <span class="mejora-badge">{{ mejora.count }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -155,6 +247,8 @@ import * as XLSX from 'xlsx'
 const { user, logout, isAuthenticated, token } = useAuth()
 
 const loading = ref(true)
+const fechaDesde = ref('')
+const fechaHasta = ref('')
 const stats = ref<any>({
   totalEncuestas: 0,
   promedioNPS: 0,
@@ -166,7 +260,14 @@ const stats = ref<any>({
 const calificacionChartData = ref({ labels: [], values: [], colors: [] })
 const npsChartData = ref({ labels: [], values: [] })
 const edadChartData = ref({ labels: [], values: [] })
-const topMejoras = ref<any[]>([])
+const topMejorasGeneral = ref<any[]>([])
+const mejorasPorCategoria = ref<any>({
+  sistema: [],
+  infraestructura: [],
+  accesibilidad: [],
+  expansion: [],
+  otros: []
+})
 const lastEncuestas = ref<any[]>([])
 
 onMounted(async () => {
@@ -184,11 +285,17 @@ const fetchData = async () => {
   try {
     loading.value = true
 
+    // Construir parámetros de filtro
+    const params: any = {}
+    if (fechaDesde.value) params.fechaInicio = fechaDesde.value
+    if (fechaHasta.value) params.fechaFin = fechaHasta.value
+
     // Obtener estadísticas
     const statsData = await $fetch('/api/encuestas/stats', {
       headers: {
         authorization: `Bearer ${token.value}`
-      }
+      },
+      params
     })
 
     stats.value = statsData
@@ -196,17 +303,21 @@ const fetchData = async () => {
     // Procesar distribución por calificación
     if (statsData.distribuccionCalificacion && statsData.distribuccionCalificacion.length > 0) {
       const colorMap: Record<string, string> = {
-        'Excelente': '#2ecc71',
-        'Buena': '#3498db',
-        'Regular': '#f39c12',
-        'Mala': '#e74c3c',
-        'Muy mala': '#c0392b'
+        'excelente': '#2ecc71',
+        'buena': '#3498db',
+        'regular': '#f39c12',
+        'mala': '#e74c3c',
+        'muy mala': '#c0392b'
       }
 
       calificacionChartData.value = {
-        labels: statsData.distribuccionCalificacion.map((item: any) => item.calificacion),
+        labels: statsData.distribuccionCalificacion.map((item: any) =>
+          item.calificacion.charAt(0).toUpperCase() + item.calificacion.slice(1)
+        ),
         values: statsData.distribuccionCalificacion.map((item: any) => Number(item.count)),
-        colors: statsData.distribuccionCalificacion.map((item: any) => colorMap[item.calificacion] || '#95a5a6')
+        colors: statsData.distribuccionCalificacion.map((item: any) =>
+          colorMap[item.calificacion.toLowerCase()] || '#95a5a6'
+        )
       }
     }
 
@@ -226,14 +337,20 @@ const fetchData = async () => {
       }
     }
 
-    // Obtener todas las encuestas para procesar mejoras
+    // Procesar mejoras categorizadas desde la API
+    if (statsData.mejorasPorCategoria) {
+      mejorasPorCategoria.value = statsData.mejorasPorCategoria
+    }
+
+    // Obtener todas las encuestas para procesar top mejoras general
     const allEncuestas = await $fetch('/api/encuestas?limit=10000', {
       headers: {
         authorization: `Bearer ${token.value}`
-      }
+      },
+      params
     })
 
-    // Procesar comentarios/mejoras
+    // Procesar comentarios/mejoras para top general
     const mejorasMap: Record<string, number> = {}
     allEncuestas.data.forEach((encuesta: any) => {
       if (encuesta.comentario && encuesta.comentario.trim() && encuesta.comentario !== '-') {
@@ -242,8 +359,8 @@ const fetchData = async () => {
       }
     })
 
-    // Obtener top 5 mejoras para el listado
-    topMejoras.value = Object.entries(mejorasMap)
+    // Obtener top 5 mejoras para el listado general
+    topMejorasGeneral.value = Object.entries(mejorasMap)
       .map(([texto, count]) => ({ texto, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
@@ -252,7 +369,8 @@ const fetchData = async () => {
     const encuestasData = await $fetch('/api/encuestas?limit=5', {
       headers: {
         authorization: `Bearer ${token.value}`
-      }
+      },
+      params
     })
 
     lastEncuestas.value = encuestasData.data
@@ -420,6 +538,69 @@ const downloadExcel = async () => {
 
   @media (max-width: 768px)
     padding 20px
+
+.filter-container
+  display flex
+  justify-content flex-end
+  align-items center
+  margin-bottom 24px
+
+  @media (max-width: 768px)
+    margin-bottom 20px
+
+  .date-filters
+    display flex
+    gap 12px
+    align-items center
+
+    @media (max-width: 768px)
+      flex-direction column
+      gap 8px
+      width 100%
+
+    .date-input-group
+      display flex
+      align-items center
+      gap 8px
+
+      @media (max-width: 768px)
+        width 100%
+
+      label
+        font-size 14px
+        font-weight 600
+        color #333
+        white-space nowrap
+
+        @media (max-width: 768px)
+          font-size 12px
+
+      .date-input
+        padding 10px 16px
+        background white
+        color #333
+        border 1px solid #e0e0e0
+        border-radius 8px
+        font-size 14px
+        font-weight 500
+        transition all 0.3s ease
+        outline none
+        box-shadow 0 2px 4px rgba(0, 0, 0, 0.08)
+        cursor pointer
+
+        @media (max-width: 768px)
+          font-size 12px
+          padding 8px 12px
+          flex 1
+
+        &:hover
+          background-color #f8f9fa
+          border-color #e30613
+          box-shadow 0 2px 8px rgba(227, 6, 19, 0.15)
+
+        &:focus
+          border-color #e30613
+          box-shadow 0 0 0 3px rgba(227, 6, 19, 0.1)
 
 .loading
   text-align center
@@ -637,4 +818,98 @@ const downloadExcel = async () => {
       font-size 11px
       font-weight 600
       flex-shrink 0
+
+.mejoras-categorizadas-section
+  background white
+  border-radius 12px
+  padding 24px
+  box-shadow 0 2px 8px rgba(0, 0, 0, 0.08)
+  margin-bottom 24px
+
+  @media (max-width: 768px)
+    padding 16px
+
+  > h3
+    margin 0 0 20px 0
+    font-size 18px
+    color #333
+
+    @media (max-width: 768px)
+      font-size 16px
+      margin 0 0 16px 0
+
+  .categorias-grid
+    display grid
+    grid-template-columns repeat(auto-fit, minmax(280px, 1fr))
+    gap 16px
+
+    @media (max-width: 768px)
+      grid-template-columns 1fr
+      gap 12px
+
+    .categoria-card
+      background #f8f9fa
+      border-radius 10px
+      padding 16px
+      transition all 0.3s ease
+
+      &:hover
+        box-shadow 0 4px 12px rgba(0, 0, 0, 0.1)
+        transform translateY(-2px)
+
+      .categoria-header
+        display flex
+        align-items center
+        gap 10px
+        margin-bottom 12px
+        padding-bottom 12px
+        border-bottom 2px solid #e0e0e0
+
+        .categoria-icon
+          font-size 24px
+          line-height 1
+
+        h4
+          margin 0
+          font-size 16px
+          color #333
+          font-weight 600
+
+      .mejoras-container
+        .mejora-item-small
+          display flex
+          align-items center
+          justify-content space-between
+          gap 8px
+          padding 8px 10px
+          background white
+          border-radius 6px
+          margin-bottom 6px
+          transition all 0.2s ease
+
+          &:last-child
+            margin-bottom 0
+
+          &:hover
+            background #e9ecef
+
+          .mejora-text
+            flex 1
+            font-size 12px
+            color #555
+            line-height 1.4
+            overflow hidden
+            text-overflow ellipsis
+            display -webkit-box
+            -webkit-line-clamp 2
+            -webkit-box-orient vertical
+
+          .mejora-badge
+            background #e3061320
+            color #e30613
+            padding 2px 8px
+            border-radius 8px
+            font-size 10px
+            font-weight 600
+            flex-shrink 0
 </style>

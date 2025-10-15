@@ -1,11 +1,11 @@
 <template>
   <div class="chart-container" ref="chartContainer">
-    <Pie :data="chartData" :options="chartOptions" :key="chartKey" />
+    <Doughnut :data="chartData" :options="chartOptions" :key="chartKey" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { Pie } from 'vue-chartjs'
+import { Doughnut } from 'vue-chartjs'
 import {
   Chart as ChartJS,
   Title,
@@ -25,7 +25,6 @@ const props = defineProps<{
     colors?: string[]
   }
   title?: string
-  unit?: string
 }>()
 
 const chartKey = ref(0)
@@ -45,15 +44,12 @@ const chartData = computed(() => ({
       backgroundColor: props.data.colors && props.data.colors.length > 0
         ? props.data.colors
         : [
-            '#e30613',  // Rojo Claro
-            '#3498db',  // Azul
-            '#2ecc71',  // Verde
-            '#f39c12',  // Naranja
-            '#9b59b6',  // Púrpura
-            '#e74c3c',  // Rojo coral
+            '#2ecc71',  // Verde para atendidos
+            '#e74c3c',  // Rojo para abandonados
           ],
-      borderWidth: 2,
-      borderColor: '#fff'
+      borderWidth: 3,
+      borderColor: '#fff',
+      hoverOffset: 8
     }
   ]
 }))
@@ -61,14 +57,18 @@ const chartData = computed(() => ({
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
+  cutout: '65%', // Esto hace que sea un donut en lugar de pie
   plugins: {
     legend: {
       position: 'bottom' as const,
       labels: {
         padding: 15,
         font: {
-          size: 12
-        }
+          size: 13,
+          weight: '600' as const
+        },
+        usePointStyle: true,
+        pointStyle: 'circle'
       }
     },
     title: {
@@ -86,8 +86,7 @@ const chartOptions = computed(() => ({
           const value = context.parsed || 0
           const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0)
           const percentage = ((value / total) * 100).toFixed(1)
-          const unitText = props.unit || 'items'
-          return `${label}: ${value} ${unitText} (${percentage}%)`
+          return `${label}: ${value} turnos (${percentage}%)`
         }
       }
     },
@@ -99,18 +98,6 @@ const chartOptions = computed(() => ({
       },
       formatter: (value: number) => {
         return value
-      },
-      anchor: (context: any) => {
-        const label = context.chart.data.labels[context.dataIndex]
-        return label === 'Hogar' ? 'end' : 'center'
-      },
-      align: (context: any) => {
-        const label = context.chart.data.labels[context.dataIndex]
-        return label === 'Hogar' ? 'start' : 'center'
-      },
-      offset: (context: any) => {
-        const label = context.chart.data.labels[context.dataIndex]
-        return label === 'Hogar' ? 5 : 0
       }
     }
   }

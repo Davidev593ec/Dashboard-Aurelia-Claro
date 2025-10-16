@@ -552,6 +552,7 @@ const downloadExcel = async () => {
       @media (max-width: 768px)
         gap 12px
         width 100%
+        justify-content flex-end
 
       .user-info
         color white
@@ -637,6 +638,9 @@ const downloadExcel = async () => {
       align-items center
       gap 8px
 
+      @media (max-width: 768px)
+        width 100%
+
       label
         font-size 14px
         font-weight 600
@@ -662,6 +666,7 @@ const downloadExcel = async () => {
         @media (max-width: 768px)
           font-size 12px
           padding 8px 12px
+          flex 1
 
         &:hover
           background-color #f8f9fa

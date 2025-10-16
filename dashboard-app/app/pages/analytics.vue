@@ -479,6 +479,7 @@ const downloadExcel = async () => {
       @media (max-width: 768px)
         gap 12px
         width 100%
+        justify-content flex-end
 
       .user-info
         color white

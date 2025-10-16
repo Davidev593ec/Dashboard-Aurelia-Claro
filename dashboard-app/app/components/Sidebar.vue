@@ -174,13 +174,13 @@ const closeSidebar = () => {
   left 20px
   width 50px
   height 50px
-  background #e30613
+  background #ff6b6b
   color white
   border none
   border-radius 50%
   font-size 24px
   cursor pointer
-  box-shadow 0 4px 12px rgba(227, 6, 19, 0.3)
+  box-shadow 0 4px 12px rgba(255, 107, 107, 0.3)
   z-index 997
   display flex
   align-items center
@@ -188,9 +188,9 @@ const closeSidebar = () => {
   transition all 0.3s ease
 
   &:hover
-    background #c50510
+    background #ff5252
     transform scale(1.05)
-    box-shadow 0 6px 16px rgba(227, 6, 19, 0.4)
+    box-shadow 0 6px 16px rgba(255, 82, 82, 0.4)
 
   @media (max-width: 768px)
     width 45px
